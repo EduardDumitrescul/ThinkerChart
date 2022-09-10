@@ -1,24 +1,16 @@
 package com.example.thinkerchart
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.widget.FrameLayout
-import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.children
-import org.w3c.dom.Text
 
 private const val TAG = "BarChart"
 
@@ -29,12 +21,10 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     private var horizontalTextViews: MutableList<TextView> = mutableListOf()
     private lateinit var chartFrame: LinearLayout
 
-    var valuePairList: List<Pair<String, Int>> = listOf(Pair("item1", 10), Pair("item2", 0), Pair("item3", 0), Pair("item4", 0), Pair("item5", 0))
-    set(value) {
-        field = value
-        post {
-            buildView()
-        }
+    private var pairList: List<Pair<String, Int>> = listOf(Pair("item1", 10), Pair("item2", 0), Pair("item3", 0), Pair("item4", 0), Pair("item5", 0))
+    fun setPairData(list: List<Pair<String, Int>>) {
+        pairList = list
+        buildView()
 
     }
 
@@ -53,6 +43,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     init {
         initDefault()
         buildView()
+        
     }
 
     private fun clearView() {
@@ -89,14 +80,14 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     }
 
     private fun computeMaxValue() {
-        valuePairList.forEach {
+        pairList.forEach {
             maxValue = maxOf(maxValue, it.second)
         }
         maxValue = ((maxValue - 1) / 25  + 1) * 25
     }
 
     private fun drawHorizontalAxis() {
-        valuePairList.forEach {
+        pairList.forEach {
             val layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             val textView = TextView(context).apply {
                 text = it.first
@@ -121,14 +112,14 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
 
     private fun computeBarHeight(value: Int): Int {
         val heightUnitCount = 1f * value / (maxValue / 25f)
-        val unitHeight = 1f * (chartFrame.measuredHeight - verticalTextViews[0].height/2) / 25f
+        val unitHeight = 1f * (chartFrame.height - verticalTextViews[0].height/2) / 25f
         val offset = 1f* verticalTextViews[0].height / 2
         Log.d(TAG, "${(heightUnitCount * unitHeight + offset).toInt()}   $heightUnitCount $unitHeight $offset ${chartFrame.measuredHeight}")
         return (heightUnitCount * unitHeight + offset).toInt()
     }
 
     private fun drawBars() {
-        valuePairList.forEach {
+        pairList.forEach {
             val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(it.second), 1f)
             layoutParams.gravity = Gravity.BOTTOM
             layoutParams.setMargins(8, 0, 8, 0)
