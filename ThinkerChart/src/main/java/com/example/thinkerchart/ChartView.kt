@@ -126,8 +126,10 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             val linearLayout = LinearLayout(context).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER
-                background = barDrawable
+                background = barDrawable.constantState?.newDrawable() ?: barDrawable
+                isClickable = true
             }
+
             barList.add(linearLayout)
             chartFrame.addView(linearLayout, layoutParams)
         }
