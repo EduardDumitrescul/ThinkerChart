@@ -3,11 +3,13 @@ package com.example.thinkerchart
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.opengl.Visibility
 import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
@@ -172,12 +174,28 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             text = value.toString()
             width = ViewGroup.LayoutParams.MATCH_PARENT
             gravity = Gravity.CENTER
+            visibility = INVISIBLE
         }
         val bar = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = barDrawable.constantState?.newDrawable() ?: barDrawable
             isClickable = true
+            setOnTouchListener(object: OnTouchListener {
+                override fun onTouch(v: View, event: MotionEvent): Boolean {
+                    v.performClick()
+                    when(event.action) {
+                        MotionEvent.ACTION_DOWN -> {
+                            textView.visibility = VISIBLE
+                        }
+                        else -> {
+                            textView.visibility = INVISIBLE
+                        }
+                    }
+                    return false
+                }
+
+            })
         }
         val barLayoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, computeBarHeight(value))
 
