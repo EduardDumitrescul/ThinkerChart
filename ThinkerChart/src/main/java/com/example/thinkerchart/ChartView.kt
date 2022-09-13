@@ -1,14 +1,18 @@
 package com.example.thinkerchart
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.res.ResourcesCompat
 
@@ -164,16 +168,31 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     }
 
     private inner class BarView(val value: Int) {
-        val view: LinearLayout = LinearLayout(context).apply {
+        val textView = TextView(context).apply {
+            text = value.toString()
+            width = ViewGroup.LayoutParams.MATCH_PARENT
+            gravity = Gravity.CENTER
+        }
+        val bar = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = barDrawable.constantState?.newDrawable() ?: barDrawable
             isClickable = true
         }
-        val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(value), 1f).apply {
+        val barLayoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, computeBarHeight(value))
+
+        val view: LinearLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            addView(textView)
+            addView(bar, barLayoutParams)
+        }
+        val layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
             gravity = Gravity.BOTTOM
+
             setMargins(8, 0, 8, 0)
         }
+
 
         fun setBackground(background: Drawable) {
             view.background = background

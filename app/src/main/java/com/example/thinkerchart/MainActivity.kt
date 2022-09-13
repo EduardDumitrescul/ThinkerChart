@@ -11,8 +11,8 @@ class MainActivity : AppCompatActivity() {
         val chartView: ChartView = findViewById(R.id.chartView)
 
         val pairList = mutableListOf<Pair<String, Int>>()
-        for(i in 0 until 51 step 5)
-            pairList.add(Pair("i${i}",i+  1))
+        for(i in 0 until 76 step 5)
+            pairList.add(Pair("i${i}",i))
         chartView.setPairData(pairList)
     }
 }
