@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -45,20 +46,15 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         buildView()
         
     }
-
-    private fun clearView() {
-        barList.clear()
-        horizontalTextViews.clear()
-        horizontalAxis.removeAllViews()
-        chartFrame.removeAllViews()
-    }
-
     private fun buildView() {
-        clearView()
         computeMaxValue()
         drawVerticalAxis()
         drawHorizontalAxis()
-        drawBars()
+        post {
+            drawBars()
+        }
+
+
         setVerticalAxisPadding(8, 8)
         setHorizontalAxisPadding(4, 4)
     }
@@ -87,6 +83,8 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     }
 
     private fun drawHorizontalAxis() {
+        horizontalAxis.removeAllViews()
+        horizontalTextViews.clear()
         pairList.forEach {
             val layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
             val textView = TextView(context).apply {
@@ -119,6 +117,8 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     }
 
     private fun drawBars() {
+        barList.clear()
+        chartFrame.removeAllViews()
         pairList.forEach {
             val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(it.second), 1f)
             layoutParams.gravity = Gravity.BOTTOM
@@ -131,6 +131,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             barList.add(linearLayout)
             chartFrame.addView(linearLayout, layoutParams)
         }
+
     }
 
     private fun screenPixelDensity() = context.resources.displayMetrics.density
