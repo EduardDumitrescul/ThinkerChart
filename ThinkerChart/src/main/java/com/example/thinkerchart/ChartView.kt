@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
-import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -29,12 +28,11 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
 
     }
 
-    private var barList: MutableList<LinearLayout> = mutableListOf()
+    private var barViewList: MutableList<BarView> = mutableListOf()
     private var barDrawable: Drawable = ResourcesCompat.getDrawable(resources, R.drawable.rounded_background, context.theme)!!
     fun setBarDrawable(drawable: Drawable) {
-        barDrawable = drawable
-        barList.forEach {
-            background = barDrawable
+        barViewList.forEach {
+            it.setBackground(drawable)
         }
     }
 
@@ -116,24 +114,28 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         return (heightUnitCount * unitHeight + offset).toInt()
     }
 
-    private fun drawBars() {
-        barList.clear()
-        chartFrame.removeAllViews()
-        pairList.forEach {
-            val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(it.second), 1f)
-            layoutParams.gravity = Gravity.BOTTOM
-            layoutParams.setMargins(8, 0, 8, 0)
-            val linearLayout = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                gravity = Gravity.CENTER
-                background = barDrawable.constantState?.newDrawable() ?: barDrawable
-                isClickable = true
-            }
-
-            barList.add(linearLayout)
-            chartFrame.addView(linearLayout, layoutParams)
+    private fun createBarView(value: Int): LinearLayout {
+        val linearLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            background = barDrawable.constantState?.newDrawable() ?: barDrawable
+            isClickable = true
         }
 
+
+
+        return linearLayout
+    }
+
+
+    private fun drawBars() {
+        barViewList.clear()
+        chartFrame.removeAllViews()
+        pairList.forEach {
+            val barView = BarView(it.second)
+            barViewList.add(barView)
+            chartFrame.addView(barView.view, barView.layoutParams)
+        }
     }
 
     private fun screenPixelDensity() = context.resources.displayMetrics.density
@@ -160,5 +162,23 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             it.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize.toFloat())
         }
     }
+
+    private inner class BarView(val value: Int) {
+        val view: LinearLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER
+            background = barDrawable.constantState?.newDrawable() ?: barDrawable
+            isClickable = true
+        }
+        val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(value), 1f).apply {
+            gravity = Gravity.BOTTOM
+            setMargins(8, 0, 8, 0)
+        }
+
+        fun setBackground(background: Drawable) {
+            view.background = background
+        }
+    }
+
 
 }
