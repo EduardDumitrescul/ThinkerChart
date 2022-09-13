@@ -81,7 +81,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         pairList.forEach {
             maxValue = maxOf(maxValue, it.second)
         }
-        maxValue = ((maxValue - 1) / 25  + 1) * 25
+        maxValue = ((maxValue) / 25  + 1) * 25
     }
 
     private fun drawHorizontalAxis() {
