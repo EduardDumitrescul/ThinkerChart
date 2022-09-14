@@ -130,7 +130,8 @@
         app:layout_constraintBottom_toTopOf="@+id/horizontal_axis"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/textView3"
-        app:layout_constraintTop_toBottomOf="@+id/view">
+        app:layout_constraintTop_toBottomOf="@+id/view"
+        android:animateLayoutChanges="true">
 
     </LinearLayout>
 

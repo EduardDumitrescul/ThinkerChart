@@ -1,5 +1,7 @@
 package com.example.thinkerchart
 
+import android.animation.AnimatorSet
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
@@ -13,6 +15,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.*
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
@@ -131,6 +134,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             val barView = BarView(it.second)
             barViewList.add(barView)
             chartFrame.addView(barView.view, barView.layoutParams)
+            barView.animatorSet.start()
         }
     }
 
@@ -209,13 +213,27 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         }
         val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(value), 1f).apply {
             gravity = Gravity.BOTTOM
-
             setMargins(8, 0, 8, 0)
         }
 
         fun setBackground(background: Drawable) {
             view.background = background
         }
+
+        val heightAnimator = ValueAnimator.ofInt(0, computeBarHeight(value)).apply {
+            duration = 500
+            addUpdateListener {
+                view.layoutParams.height = (it.animatedValue as Int)
+                view.requestLayout()
+            }
+
+        }
+
+        val animatorSet = AnimatorSet().apply {
+            play(heightAnimator)
+            interpolator = AccelerateDecelerateInterpolator()
+        }
+
     }
 
 
