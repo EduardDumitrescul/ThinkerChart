@@ -1,5 +1,6 @@
 package com.example.thinkerchart
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -26,6 +27,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     private var verticalTextViews: MutableList<TextView> = mutableListOf()
     private var horizontalTextViews: MutableList<TextView> = mutableListOf()
     private lateinit var chartFrame: LinearLayout
+    private lateinit var infoTextView: TextView
 
     private var pairList: List<Pair<String, Int>> = listOf(Pair("item1", 10), Pair("item2", 0), Pair("item3", 0), Pair("item4", 0), Pair("item5", 0))
     fun setPairData(list: List<Pair<String, Int>>) {
@@ -56,6 +58,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         drawHorizontalAxis()
         post {
             drawBars()
+            connectInfoTextViewToBarsListener()
         }
 
 
@@ -71,6 +74,7 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     private fun getViews() {
         horizontalAxis = findViewById(R.id.horizontal_axis)
         chartFrame = findViewById(R.id.chart_frame)
+        infoTextView = findViewById(R.id.infoTextView)
         verticalTextViews.add(findViewById(R.id.textView0))
         verticalTextViews.add(findViewById(R.id.textView1))
         verticalTextViews.add(findViewById(R.id.textView2))
@@ -120,19 +124,6 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         return (heightUnitCount * unitHeight + offset).toInt()
     }
 
-    private fun createBarView(value: Int): LinearLayout {
-        val linearLayout = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            background = barDrawable.constantState?.newDrawable() ?: barDrawable
-            isClickable = true
-        }
-
-
-
-        return linearLayout
-    }
-
 
     private fun drawBars() {
         barViewList.clear()
@@ -141,6 +132,12 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             val barView = BarView(it.second)
             barViewList.add(barView)
             chartFrame.addView(barView.view, barView.layoutParams)
+        }
+    }
+
+    private fun connectInfoTextViewToBarsListener() {
+        barViewList.forEach {
+            it.setupTouchListener(infoTextView)
         }
     }
 
@@ -170,22 +167,29 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
     }
 
     private inner class BarView(val value: Int) {
-        val textView = TextView(context).apply {
-            text = value.toString()
-            width = ViewGroup.LayoutParams.MATCH_PARENT
-            gravity = Gravity.CENTER
-            visibility = INVISIBLE
-        }
-        val bar = LinearLayout(context).apply {
+
+        val view: LinearLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = barDrawable.constantState?.newDrawable() ?: barDrawable
             isClickable = true
-            setOnTouchListener(object: OnTouchListener {
+        }
+        val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(value), 1f).apply {
+            gravity = Gravity.BOTTOM
+
+            setMargins(8, 0, 8, 0)
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        fun setupTouchListener(textView: TextView) {
+            view.isClickable = true
+            view.setOnTouchListener( object: OnTouchListener {
                 override fun onTouch(v: View, event: MotionEvent): Boolean {
                     v.performClick()
-                    when(event.action) {
+                    when (event.action) {
                         MotionEvent.ACTION_DOWN -> {
+                            Log.d(TAG, "down")
+                            textView.text = value.toString()
                             textView.visibility = VISIBLE
                         }
                         else -> {
@@ -194,23 +198,8 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
                     }
                     return false
                 }
-
             })
         }
-        val barLayoutParams = LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, computeBarHeight(value))
-
-        val view: LinearLayout = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            gravity = Gravity.CENTER
-            addView(textView)
-            addView(bar, barLayoutParams)
-        }
-        val layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
-            gravity = Gravity.BOTTOM
-
-            setMargins(8, 0, 8, 0)
-        }
-
 
         fun setBackground(background: Drawable) {
             view.background = background
