@@ -61,8 +61,6 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             drawBars()
             connectInfoTextViewToBarsListener()
         }
-
-
         setVerticalAxisPadding(8, 8)
         setHorizontalAxisPadding(4, 4)
     }
