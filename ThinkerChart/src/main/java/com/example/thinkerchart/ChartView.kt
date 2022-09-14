@@ -17,6 +17,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
 
 private const val TAG = "BarChart"
@@ -135,10 +136,45 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun connectInfoTextViewToBarsListener() {
-        barViewList.forEach {
-            it.setupTouchListener(infoTextView)
-        }
+        var pressedView: View? = null
+        chartFrame.isClickable = true
+        chartFrame.setOnTouchListener(object: OnTouchListener {
+            override fun onTouch(v: View, event: MotionEvent): Boolean {
+                val unitWidth = chartFrame.measuredWidth / barViewList.size
+                var index = (event.x / unitWidth).toInt()
+                if(index >= barViewList.size) {
+                    index = barViewList.size - 1
+                }
+                else if(index < 0) {
+                    index = 0
+                }
+                val bar = barViewList[index]
+                when(event.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        bar.view.isPressed = true
+                        pressedView = bar.view
+                        infoTextView.text = bar.value.toString()
+                        infoTextView.visibility = VISIBLE
+                    }
+                    MotionEvent.ACTION_MOVE -> {
+                        pressedView?.isPressed = false
+                        pressedView = bar.view
+                        bar.view.isPressed = true
+                        infoTextView.text = bar.value.toString()
+                        infoTextView.visibility = VISIBLE
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        bar.view.isPressed = false
+                        infoTextView.text = bar.value.toString()
+                        infoTextView.visibility = INVISIBLE
+                    }
+                }
+                return true
+            }
+
+        })
     }
 
     private fun screenPixelDensity() = context.resources.displayMetrics.density
@@ -172,33 +208,11 @@ class ChartView(context: Context, attributeSet: AttributeSet): ConstraintLayout(
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
             background = barDrawable.constantState?.newDrawable() ?: barDrawable
-            isClickable = true
         }
         val layoutParams = LinearLayout.LayoutParams(0, computeBarHeight(value), 1f).apply {
             gravity = Gravity.BOTTOM
 
             setMargins(8, 0, 8, 0)
-        }
-
-        @SuppressLint("ClickableViewAccessibility")
-        fun setupTouchListener(textView: TextView) {
-            view.isClickable = true
-            view.setOnTouchListener( object: OnTouchListener {
-                override fun onTouch(v: View, event: MotionEvent): Boolean {
-                    v.performClick()
-                    when (event.action) {
-                        MotionEvent.ACTION_DOWN -> {
-                            Log.d(TAG, "down")
-                            textView.text = value.toString()
-                            textView.visibility = VISIBLE
-                        }
-                        else -> {
-                            textView.visibility = INVISIBLE
-                        }
-                    }
-                    return false
-                }
-            })
         }
 
         fun setBackground(background: Drawable) {
